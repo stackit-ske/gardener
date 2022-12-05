@@ -16,6 +16,7 @@ package utils
 
 import (
 	"net"
+	"net/netip"
 	"regexp"
 	"strings"
 	"time"
@@ -155,4 +156,13 @@ func IifString(condition bool, onTrue, onFalse string) string {
 		return onTrue
 	}
 	return onFalse
+}
+
+// GetBitlen returns Bitlen for an IPv4/IPv6 address
+func GetBitlen(address string) int {
+	ip, err := netip.ParseAddr(address)
+	if err != nil {
+		return 32
+	}
+	return ip.BitLen()
 }

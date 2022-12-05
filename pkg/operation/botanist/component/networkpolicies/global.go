@@ -17,6 +17,8 @@ package networkpolicies
 import (
 	"fmt"
 
+	"github.com/gardener/gardener/pkg/utils"
+
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/coredns"
 	"github.com/gardener/gardener/pkg/operation/botanist/component/nodelocaldns"
@@ -267,19 +269,21 @@ func getGlobalNetworkPolicyTransformers(values GlobalValues) []networkPolicyTran
 					}
 
 					if values.DNSServerAddress != nil {
+						bits := utils.GetBitlen(*values.DNSServerAddress)
 						obj.Spec.Egress[0].To = append(obj.Spec.Egress[0].To, networkingv1.NetworkPolicyPeer{
 							IPBlock: &networkingv1.IPBlock{
 								// required for node local dns feature, allows egress traffic to CoreDNS
-								CIDR: fmt.Sprintf("%s/32", *values.DNSServerAddress),
+								CIDR: fmt.Sprintf("%s/%d", *values.DNSServerAddress, bits),
 							},
 						})
 					}
 
 					if values.NodeLocalIPVSAddress != nil {
+						bits := utils.GetBitlen(*values.NodeLocalIPVSAddress)
 						obj.Spec.Egress[0].To = append(obj.Spec.Egress[0].To, networkingv1.NetworkPolicyPeer{
 							IPBlock: &networkingv1.IPBlock{
 								// required for node local dns feature, allows egress traffic to node local dns cache
-								CIDR: fmt.Sprintf("%s/32", *values.NodeLocalIPVSAddress),
+								CIDR: fmt.Sprintf("%s/%d", *values.NodeLocalIPVSAddress, bits),
 							},
 						})
 					}
@@ -360,17 +364,25 @@ func getGlobalNetworkPolicyTransformers(values GlobalValues) []networkPolicyTran
 							},
 						},
 						Egress: []networkingv1.NetworkPolicyEgressRule{{
-							To: []networkingv1.NetworkPolicyPeer{{
-								IPBlock: &networkingv1.IPBlock{
-									CIDR: "0.0.0.0/0",
-									Except: append([]string{
-										Private8BitBlock().String(),
-										Private12BitBlock().String(),
-										Private16BitBlock().String(),
-										CarrierGradeNATBlock().String(),
-									}, values.BlockedAddresses...),
+							To: []networkingv1.NetworkPolicyPeer{
+								{
+									IPBlock: &networkingv1.IPBlock{
+										CIDR: "0.0.0.0/0",
+										Except: append([]string{
+											Private8BitBlock().String(),
+											Private12BitBlock().String(),
+											Private16BitBlock().String(),
+											CarrierGradeNATBlock().String(),
+										}, values.BlockedAddresses...),
+									},
 								},
-							}},
+								{
+									//TODO(nschad): Add except Block for ipv6 like for ipv4? What about BlockedAddresses?!
+									IPBlock: &networkingv1.IPBlock{
+										CIDR: "::/0",
+									},
+								},
+							},
 						}},
 						PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 					}

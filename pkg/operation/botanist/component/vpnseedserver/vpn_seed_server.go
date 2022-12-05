@@ -353,6 +353,7 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 								},
 							},
 							SecurityContext: &corev1.SecurityContext{
+								Privileged: pointer.Bool(true),
 								Capabilities: &corev1.Capabilities{
 									Add: []corev1.Capability{
 										"NET_ADMIN",
@@ -424,6 +425,7 @@ func (v *vpnSeedServer) Deploy(ctx context.Context) error {
 							Image:           v.imageAPIServerProxy,
 							ImagePullPolicy: corev1.PullIfNotPresent,
 							SecurityContext: &corev1.SecurityContext{
+								Privileged: pointer.Bool(true),
 								Capabilities: &corev1.Capabilities{
 									Drop: []corev1.Capability{
 										"all",
@@ -755,7 +757,8 @@ var envoyConfig = `static_resources:
     address:
       socket_address:
         protocol: TCP
-        address: 0.0.0.0
+        address: "::"
+        ipv4_compat: false
         port_value: ` + fmt.Sprintf("%d", EnvoyPort) + `
     listener_filters:
     - name: "envoy.filters.listener.tls_inspector"
@@ -820,7 +823,7 @@ var envoyConfig = `static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
               dns_cache_config:
                 name: dynamic_forward_proxy_cache_config
-                dns_lookup_family: V4_ONLY
+                dns_lookup_family: V6_ONLY
                 max_hosts: 8192
           - name: envoy.filters.http.router
             typed_config:
@@ -832,7 +835,8 @@ var envoyConfig = `static_resources:
   - name: metrics_listener
     address:
       socket_address:
-        address: 0.0.0.0
+        address: "::"
+        ipv4_compat: false
         port_value: ` + fmt.Sprintf("%d", envoyMetricsPort) + `
     filter_chains:
     - filters:
@@ -872,7 +876,7 @@ var envoyConfig = `static_resources:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
-          dns_lookup_family: V4_ONLY
+          dns_lookup_family: V6_ONLY
           max_hosts: 8192
   - name: prometheus_stats
     connect_timeout: 0.25s

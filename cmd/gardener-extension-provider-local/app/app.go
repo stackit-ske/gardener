@@ -62,23 +62,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	"net/netip"
 )
-
-var hostIP string
-
-func init() {
-	addrs, err := net.InterfaceAddrs()
-	utilruntime.Must(err)
-
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				hostIP = ipnet.IP.String()
-				break
-			}
-		}
-	}
-}
 
 // NewControllerManagerCommand creates a new command for running a local provider controller.
 func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
@@ -119,7 +105,7 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 		// options for the service controller
 		serviceCtrlOpts = &localservice.ControllerOptions{
 			MaxConcurrentReconciles: 5,
-			HostIP:                  hostIP,
+			HostIP:                  "",
 			APIServerSNIEnabled:     true,
 		}
 
@@ -232,6 +218,15 @@ func NewControllerManagerCommand(ctx context.Context) *cobra.Command {
 			// add common meta types to schema for controller-runtime to use v1.ListOptions
 			metav1.AddToGroupVersion(scheme, machinev1alpha1.SchemeGroupVersion)
 
+			// Set HostIP
+			hostIP, err := getHostIP(true)
+			if err != nil {
+				return err
+			}
+			if serviceCtrlOpts.HostIP == "" {
+				serviceCtrlOpts.HostIP = hostIP
+			}
+
 			controlPlaneCtrlOpts.Completed().Apply(&localcontrolplane.DefaultAddOptions.Controller)
 			dnsRecordCtrlOpts.Completed().Apply(&localdnsrecord.DefaultAddOptions)
 			healthCheckCtrlOpts.Completed().Apply(&localhealthcheck.DefaultAddOptions.Controller)
@@ -341,4 +336,31 @@ func (w *webhookTriggerer) trigger(ctx context.Context, reader client.Reader, wr
 		object := obj.(client.Object)
 		return writer.Patch(ctx, object, client.RawPatch(types.StrategicMergePatchType, []byte("{}")))
 	})
+}
+
+func getHostIP(is6 bool) (string, error) {
+	var hostIP string
+	addrs, err := net.InterfaceAddrs()
+	utilruntime.Must(err)
+
+	for _, address := range addrs {
+		prefix, err := netip.ParsePrefix(address.String())
+		if err != nil {
+			panic(err)
+		}
+
+		isRightV := prefix.Addr().Is4()
+		if is6 {
+			isRightV = prefix.Addr().Is6()
+		}
+
+		if isRightV && !prefix.Addr().IsLoopback() {
+			hostIP = prefix.Addr().String()
+		}
+	}
+
+	if hostIP == "" {
+		return "", fmt.Errorf("unable to figure out host IP")
+	}
+	return hostIP, nil
 }

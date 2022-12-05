@@ -17,6 +17,7 @@ package networkpolicies_test
 import (
 	"fmt"
 
+	"github.com/gardener/gardener/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -219,17 +220,19 @@ func constructNPAllowToDNS(namespace string, dnsServerAddress, nodeLocalIPVSAddr
 	)
 
 	if dnsServerAddress != nil {
+		bits := utils.GetBitlen(*dnsServerAddress)
 		obj.Spec.Egress[0].To = append(obj.Spec.Egress[0].To, networkingv1.NetworkPolicyPeer{
 			IPBlock: &networkingv1.IPBlock{
-				CIDR: fmt.Sprintf("%s/32", *dnsServerAddress),
+				CIDR: fmt.Sprintf("%s/%d", *dnsServerAddress, bits),
 			},
 		})
 	}
 
 	if nodeLocalIPVSAddress != nil {
+		bits := utils.GetBitlen(*nodeLocalIPVSAddress)
 		obj.Spec.Egress[0].To = append(obj.Spec.Egress[0].To, networkingv1.NetworkPolicyPeer{
 			IPBlock: &networkingv1.IPBlock{
-				CIDR: fmt.Sprintf("%s/32", *nodeLocalIPVSAddress),
+				CIDR: fmt.Sprintf("%s/%d", *nodeLocalIPVSAddress, bits),
 			},
 		})
 	}

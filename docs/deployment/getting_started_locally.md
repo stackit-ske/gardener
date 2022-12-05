@@ -22,6 +22,45 @@ Based on [Skaffold](https://skaffold.dev/), the container images for all require
   - If the network does not exist, it can be created with `docker network create kind --subnet 172.18.0.0/16`
   - If the network already exists, the CIDR can be checked with `docker network inspect kind  | jq '.[].IPAM.Config[].Subnet'`. If it is not `172.18.0.0/16`, delete the network with `docker network rm kind` and create it with the command above.
 
+## IPv6 Singe Stack
+
+If you want to try **IPv6** local setup you must `export USE_IPV6=1` before setting up kind and be sure that `/etc/hosts` contains `::1 localhost`.
+
+Also we need to configure NAT for the kind network. After `make kind-up` check network created by kind.
+
+```
+docker network inspect kind | jq '.[].IPAM.Config[].Subnet'
+```
+
+Output sample:
+```bash
+"172.18.0.0/16"
+"fc00:f853:ccd:e793::/64"
+```
+
+Check your network interface with default route
+
+```bash
+ip r s default 
+```
+
+Output sample:
+
+```bash
+default via 192.168.195.1 dev enp3s0 proto dhcp src 192.168.195.34 metric 100
+```
+
+Now get interface name and IPv6 subnet and build iptables command
+
+```bash
+ip6tables -t nat -A POSTROUTING -o $INTERFACE -s $SUBNET -j MASQUERADE
+```
+
+Complete command with samples, maybe you need to run the command with `sudo`:
+```bash
+ip6tables -t nat -A POSTROUTING -o enp3s0 -s fc00:f853:ccd:e793::/64 -j MASQUERADE
+```
+
 ## Setting up the KinD cluster (garden and seed)
 
 ```bash
