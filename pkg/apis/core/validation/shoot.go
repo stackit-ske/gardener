@@ -1513,6 +1513,9 @@ func ValidateKubeletConfig(kubeletConfig core.KubeletConfig, version string, doc
 		}
 		allErrs = append(allErrs, ValidatePositiveDuration(kubeletConfig.ImagePullProgressDeadline, fldPath.Child("imagePullProgressDeadline"))...)
 	}
+	if kubeletConfig.EnforceNodeAllocatable != nil {
+		allErrs = append(allErrs, validateKubeletConfigEnforceNodeAllocatable(kubeletConfig.EnforceNodeAllocatable, fldPath.Child("enforceNodeAllocatable"))...)
+	}
 	if kubeletConfig.EvictionPressureTransitionPeriod != nil {
 		allErrs = append(allErrs, ValidatePositiveDuration(kubeletConfig.EvictionPressureTransitionPeriod, fldPath.Child("evictionPressureTransitionPeriod"))...)
 	}
@@ -1589,6 +1592,33 @@ func ValidateKubeletConfig(kubeletConfig core.KubeletConfig, version string, doc
 
 		if featureGateEnabled, ok := kubeletConfig.FeatureGates["NodeSwap"]; !ok || (!featureGateEnabled && v.SwapBehavior != nil) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("memorySwap"), "configuring swap behaviour is not available when kubelet's 'NodeSwap' feature gate is not set"))
+		}
+	}
+
+	return allErrs
+}
+
+const enforceNodeAllocatableNone = "none"
+
+var validEnforceNodeAllocatable = sets.NewString(enforceNodeAllocatableNone, "pods", "system-reserved", "kube-reserved")
+
+func validateKubeletConfigEnforceNodeAllocatable(enforceNodeAllocatable []string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if sets.NewString(enforceNodeAllocatable...).Has(enforceNodeAllocatableNone) && len(enforceNodeAllocatable) > 1 {
+		return append(allErrs, field.Invalid(fldPath, enforceNodeAllocatable, "If none is specified, no additional options must be set"))
+	}
+
+	hasSeen := sets.NewString()
+	for i, entry := range enforceNodeAllocatable {
+		if hasSeen.Has(entry) {
+			allErrs = append(allErrs, field.Duplicate(fldPath.Index(i), entry))
+		}
+
+		hasSeen.Insert(entry)
+
+		if !validEnforceNodeAllocatable.Has(entry) {
+			allErrs = append(allErrs, field.NotSupported(fldPath.Index(i), entry, validEnforceNodeAllocatable.List()))
 		}
 	}
 
