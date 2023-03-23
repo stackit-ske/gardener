@@ -85,6 +85,8 @@ func Config(kubernetesVersion *semver.Version, clusterDNSAddress, clusterDomain 
 		KubeAPIBurst:                     50,
 		KubeAPIQPS:                       pointer.Int32(50),
 		KubeReserved:                     params.KubeReserved,
+		KubeReservedCgroup:               "/podruntime",
+		KubeletCgroups:                   "/podruntime.slice/kubelet.service", // TODO should this be /podruntime/kubelet.service
 		MaxOpenFiles:                     1000000,
 		MaxPods:                          *params.MaxPods,
 		PodsPerCore:                      0,
@@ -98,6 +100,7 @@ func Config(kubernetesVersion *semver.Version, clusterDNSAddress, clusterDomain 
 		SerializeImagePulls:              params.SerializeImagePulls,
 		ServerTLSBootstrap:               true,
 		StreamingConnectionIdleTimeout:   *params.StreamingConnectionIdleTimeout,
+		SystemReservedCgroup:             "/system",
 		RegisterWithTaints: []corev1.Taint{{
 			Key:    v1beta1constants.TaintNodeCriticalComponentsNotReady,
 			Effect: corev1.TaintEffectNoSchedule,

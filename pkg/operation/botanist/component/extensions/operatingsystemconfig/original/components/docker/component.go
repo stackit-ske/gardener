@@ -93,6 +93,7 @@ After=` + UnitName + `
 [Install]
 WantedBy=multi-user.target
 [Service]
+Slice=podruntime.slice
 Restart=always
 EnvironmentFile=/etc/environment
 ExecStart=` + pathHealthMonitor),

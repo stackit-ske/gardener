@@ -72,6 +72,18 @@ const (
 	// PathNodeName is the path for a file containing the name of the Node registered by kubelet for the respective
 	// machine.
 	PathNodeName = PathKubeletDirectory + "/nodename"
+	// PathPodruntimeSlice is the path for the file that specifies the podruntime.slice.
+	PathPodruntimeSlice = "/etc/systemd/system/podruntime.slice"
+	// ContentPodruntimeSlice contains the config for the podruntime.slice
+	// TODO this is most likely not the right place to put this config, find a better location
+	ContentPodruntimeSlice = `[Unit]
+Description=slice used to run Kubelet and Runtime
+Before=slices.target
+
+[Slice]
+MemoryAccounting=true
+CPUAccounting=true	
+`
 
 	pathVolumePluginDirectory = "/var/lib/kubelet/volumeplugins"
 )
@@ -118,6 +130,7 @@ Documentation=https://kubernetes.io/docs/admin/kubelet
 [Install]
 WantedBy=multi-user.target
 [Service]
+Slice=podruntime.slice
 Restart=always
 RestartSec=5
 EnvironmentFile=/etc/environment
@@ -136,6 +149,7 @@ After=` + UnitName + `
 [Install]
 WantedBy=multi-user.target
 [Service]
+Slice=podruntime.slice
 Restart=always
 EnvironmentFile=/etc/environment
 ExecStartPre=` + PathScriptCopyKubernetesBinary + ` kubectl
@@ -167,6 +181,18 @@ ExecStart=` + pathHealthMonitor),
 					Inline: &extensionsv1alpha1.FileContentInline{
 						Encoding: "b64",
 						Data:     utils.EncodeBase64(healthMonitorScript.Bytes()),
+					},
+				},
+			},
+			// TODO like with the config above, find a better location for this
+			// e.g. this could go in a separate components/podruntime folder
+			{
+				Path:        PathPodruntimeSlice,
+				Permissions: pointer.Int32(0644),
+				Content: extensionsv1alpha1.FileContent{
+					Inline: &extensionsv1alpha1.FileContentInline{
+						Encoding: "b64",
+						Data:     utils.EncodeBase64([]byte(ContentPodruntimeSlice)),
 					},
 				},
 			},

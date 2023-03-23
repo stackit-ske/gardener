@@ -82,6 +82,7 @@ Description=Containerd initializer
 [Install]
 WantedBy=multi-user.target
 [Service]
+Slice=podruntime.slice
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=` + pathScript),
@@ -106,6 +107,18 @@ ExecStart=` + pathScript),
 						Data: `[Unit]
 After=` + unitNameInitializer + `
 Requires=` + unitNameInitializer,
+					},
+				},
+			},
+			// TODO this is most likely not the right place for this, should go
+			// in a separate components/podruntime folder once done right
+			{
+				Path:        "/etc/systemd/system/containerd.service.d/50-podruntime-slice.conf",
+				Permissions: pointer.Int32(0644),
+				Content: extensionsv1alpha1.FileContent{
+					Inline: &extensionsv1alpha1.FileContentInline{
+						Data: `[Service]
+Slice=podruntime.slice`,
 					},
 				},
 			},

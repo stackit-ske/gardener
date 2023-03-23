@@ -55,7 +55,7 @@ const (
 	// PathSocketEndpoint is the path to the containerd unix domain socket.
 	PathSocketEndpoint = "unix:///run/containerd/containerd.sock"
 	// CgroupPath is the cgroup path the containerd container runtime is isolated in.
-	CgroupPath = "/system.slice/containerd.service"
+	CgroupPath = "/podruntime.slice/containerd.service"
 	// ContainerRuntime designates the runtime type
 	ContainerRuntime = "containerd"
 )
