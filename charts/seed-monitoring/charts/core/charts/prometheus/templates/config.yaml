@@ -343,7 +343,7 @@ data:
         regex: ^uds_admin$
         action: drop
       - source_labels: [ envoy_listener_address ]
-        regex: ^0.0.0.0_16910$
+        regex: ^.+_16910$
         action: drop
 {{- end }}
 
