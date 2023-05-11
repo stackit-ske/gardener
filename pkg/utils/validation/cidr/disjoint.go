@@ -41,6 +41,9 @@ func ValidateNetworkDisjointedness(fldPath *field.Path, shootNodes, shootPods, s
 	if shootNodes != nil && NetworksIntersect(*shootNodes, v1beta1constants.DefaultVPNRange) {
 		allErrs = append(allErrs, field.Invalid(pathNodes, *shootNodes, fmt.Sprintf("shoot node network intersects with default vpn network (%s)", v1beta1constants.DefaultVPNRange)))
 	}
+	if shootNodes != nil && NetworksIntersect(*shootNodes, v1beta1constants.DefaultVPNRangeV6) {
+		allErrs = append(allErrs, field.Invalid(pathNodes, *shootNodes, fmt.Sprintf("shoot node network intersects with default vpn network (%s)", v1beta1constants.DefaultVPNRangeV6)))
+	}
 
 	if shootServices != nil {
 		if NetworksIntersect(seedServices, *shootServices) {
@@ -54,6 +57,9 @@ func ValidateNetworkDisjointedness(fldPath *field.Path, shootNodes, shootPods, s
 		}
 		if NetworksIntersect(v1beta1constants.DefaultVPNRange, *shootServices) {
 			allErrs = append(allErrs, field.Invalid(pathServices, *shootServices, fmt.Sprintf("shoot service network intersects with default vpn network (%s)", v1beta1constants.DefaultVPNRange)))
+		}
+		if NetworksIntersect(v1beta1constants.DefaultVPNRangeV6, *shootServices) {
+			allErrs = append(allErrs, field.Invalid(pathServices, *shootServices, fmt.Sprintf("shoot service network intersects with default vpn network (%s)", v1beta1constants.DefaultVPNRangeV6)))
 		}
 	} else {
 		allErrs = append(allErrs, field.Required(pathServices, "services is required"))
@@ -71,6 +77,9 @@ func ValidateNetworkDisjointedness(fldPath *field.Path, shootNodes, shootPods, s
 		}
 		if NetworksIntersect(v1beta1constants.DefaultVPNRange, *shootPods) {
 			allErrs = append(allErrs, field.Invalid(pathPods, *shootPods, fmt.Sprintf("shoot pod network intersects with default vpn network (%s)", v1beta1constants.DefaultVPNRange)))
+		}
+		if NetworksIntersect(v1beta1constants.DefaultVPNRangeV6, *shootPods) {
+			allErrs = append(allErrs, field.Invalid(pathPods, *shootPods, fmt.Sprintf("shoot pod network intersects with default vpn network (%s)", v1beta1constants.DefaultVPNRangeV6)))
 		}
 	} else if !workerless {
 		allErrs = append(allErrs, field.Required(pathPods, "pods is required"))
