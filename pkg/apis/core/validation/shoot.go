@@ -482,6 +482,7 @@ func ValidateNodeCIDRMaskWithMaxPod(maxPod int32, nodeCIDRMaskSize int32, networ
 func ValidateTotalNodeCountWithPodCIDR(shoot *core.Shoot) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	// TODO: clarify why this is only called for create requests but not for updates
 	nodeCIDRMaskSize := int64(defaultNodeCIDRMaskSizeV4)
 	if core.IsIPv6SingleStack(shoot.Spec.Networking.IPFamilies) {
 		nodeCIDRMaskSize = defaultNodeCIDRMaskSizeV6
