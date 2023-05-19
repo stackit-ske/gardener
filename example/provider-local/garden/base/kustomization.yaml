@@ -14,6 +14,18 @@ patchesStrategicMerge:
 - patch-controller-registrations.yaml
 
 patches:
+- patch: |
+    apiVersion: core.gardener.cloud/v1beta1
+    kind: ControllerDeployment
+    metadata:
+      name: networking-calico
+    type: helm
+    providerConfig:
+      values:
+        image:
+          # https://github.com/stackitcloud/gardener-extension-networking-calico/tree/feature/ipv6-support
+          repository: ghcr.io/stackitcloud/gardener-extension-networking-calico/networking-calico
+          tag: 74ec38c7e851d54d262df1beb12634800ea92646
 - target:
     group: core.gardener.cloud
     kind: ControllerRegistration

@@ -159,8 +159,9 @@ images:
   targetVersion: "< 1.21"
 - name: vpn-seed-server
   sourceRepository: github.com/gardener/vpn2
-  repository: eu.gcr.io/gardener-project/gardener/vpn-seed-server
-  tag: "0.16.0"
+  # https://github.com/stackitcloud/vpn2/tree/feature/ipv6
+  repository: ghcr.io/stackitcloud/vpn2/vpn-seed-server
+  tag: "d2dd9a70a4c992038d93b6d51ea377d750b6a070"
 
 # Monitoring
 - name: alertmanager
@@ -273,8 +274,9 @@ images:
 # Shoot core addons
 - name: vpn-shoot-client
   sourceRepository: github.com/gardener/vpn2
-  repository: eu.gcr.io/gardener-project/gardener/vpn-shoot-client
-  tag: "0.16.0"
+  # https://github.com/stackitcloud/vpn2/tree/feature/ipv6
+  repository: ghcr.io/stackitcloud/vpn2/vpn-shoot-client
+  tag: "d2dd9a70a4c992038d93b6d51ea377d750b6a070"
 - name: coredns
   sourceRepository: github.com/coredns/coredns
   repository: eu.gcr.io/gardener-project/3rd/coredns/coredns
