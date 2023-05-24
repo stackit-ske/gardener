@@ -486,6 +486,8 @@ profiles:
       global.apiserver.clusterIdentity: gardener-extensions
       global.scheduler.config.schedulers.shoot.candidateDeterminationStrategy: MinimalDistance
       global.scheduler.config.schedulers.shoot.concurrentSyncs: 5
+      global.admission.service.clusterIP: fd00:10:2::1000
+      global.apiserver.featureGates.IPv6SingleStack: true
   - op: add
     path: /deploy/helm/releases/0/valuesFiles/-
     value: example/provider-extensions/garden/controlplane/values.yaml

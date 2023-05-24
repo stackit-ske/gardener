@@ -4,6 +4,7 @@
   apiServer:
 {{- if .Values.gardener.apiserverRelay.deployed }}  
     certSANs:
+      - ::1
       - localhost
       - 127.0.0.1
       - gardener-apiserver.relay.svc.cluster.local

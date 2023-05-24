@@ -49,4 +49,5 @@ GARDENER_LOCAL_KUBECONFIG=$garden_kubeconfig \
   SEED_NAME=$seed_name \
   SEED_VALUES=$seed_values \
   SKAFFOLD_PUSH=true \
-  skaffold run -m gardenlet -p extensions --kubeconfig="$seed_kubeconfig"
+  SKAFFOLD_INSECURE_REGISTRY=$registry_domain \
+  skaffold run -m gardenlet -p extensions --kubeconfig="$seed_kubeconfig" 

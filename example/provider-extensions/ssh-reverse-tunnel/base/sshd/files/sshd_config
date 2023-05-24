@@ -1,5 +1,5 @@
 Port 6222
-ListenAddress 0.0.0.0
+ListenAddress ::
 
 HostKey /gardener-apiserver-ssh-keys/ssh_host_rsa_key
 HostKey /gardener-apiserver-ssh-keys/ssh_host_ecdsa_key

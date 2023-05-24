@@ -60,7 +60,7 @@ kubectl --kubeconfig "$kubeconfig" --server-side=true apply -f "$SCRIPT_DIR"/reg
 
 echo "Waiting max 5m until registry endpoint is available"
 start_time=$(date +%s)
-until [ "$(curl --write-out '%{http_code}' --silent --output /dev/null https://"$registry"/v2/)" -eq "401" ]; do
+until [ "$(curl -k --write-out '%{http_code}' --silent --output /dev/null https://"$registry"/v2/)" -eq "401" ]; do
   elapsed_time=$(($(date +%s) - "$start_time"))
   if [ $elapsed_time -gt 300 ]; then
     echo "Timeout"
