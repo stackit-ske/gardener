@@ -35,7 +35,7 @@ func GetReplicaCount(failureToleranceType *gardencorev1beta1.FailureToleranceTyp
 		return pointer.Int32(1)
 	}
 
-	return pointer.Int32(2)
+	return pointer.Int32(1)
 }
 
 // GetNodeSelectorRequirementForZones returns a node selector requirement to ensure all pods are scheduled only on
