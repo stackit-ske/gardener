@@ -17,6 +17,12 @@ PATH_HYPERKUBE_IMAGE_USED_FOR_LAST_COPY_KUBECTL="{{ .pathHyperKubeImageUsedForLa
 
 mkdir -p "{{ .pathKubeletDirectory }}" "$PATH_HYPERKUBE_DOWNLOADS"
 
+INT=$(ip route show default | awk '{print $5}')
+LOCAL_IPV6=$(ip a s $INT | awk '$1 == "inet6" {print $2}' |grep -v fe80 |cut -d"/" -f1)
+
+echo "nameserver 2001:4860:4860::8888" > /var/lib/kubelet/resolv.conf
+echo "KUBELET_EXTRA_ARGS= --node-ip=$LOCAL_IPV6 --resolv-conf=/var/lib/kubelet/resolv.conf" > /var/lib/kubelet/extra_args
+
 {{ if .kubeletDataVolume -}}
 function format-data-device() {
   LABEL=KUBEDEV
