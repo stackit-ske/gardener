@@ -1,7 +1,7 @@
 apiVersion: core.gardener.cloud/v1beta1
 kind: Shoot
 metadata:
-  name: secv6
+  name: hackathon3
   namespace: garden
   annotations:
     shoot.gardener.cloud/infrastructure-cleanup-wait-period-seconds: "0"

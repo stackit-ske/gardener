@@ -6,7 +6,7 @@ LOCAL_IPV4=$(ip a s $INT | awk '$1 == "inet" {print $2}'|cut -d"/" -f1)
 EXTERNAL_IPV4=$(curl -H "Metadata-Flavor:Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
 
 echo "nameserver 2001:4860:4860::8844" |sudo tee /var/lib/kubelet/resolv.conf
-echo "KUBELET_EXTRA_ARGS=\"--node-ip=$LOCAL_IPV6\" --resolv-conf=/var/lib/kubelet/resolv.conf" |sudo tee /etc/default/kubelet
+echo "KUBELET_EXTRA_ARGS=--node-ip=$LOCAL_IPV6 --resolv-conf=/var/lib/kubelet/resolv.conf" |sudo tee /etc/default/kubelet
 sudo systemctl restart kubelet
 
 sudo kubeadm init \
